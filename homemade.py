@@ -12,8 +12,7 @@ from lib.engine_wrapper import MinimalEngine, MOVE
 from typing import Any
 import sys
 import logging
-from HomemadeEngine.ChessEngine import get_best_move
-
+from HomemadeEngine.ChessEngine import get_best_move, negamax_get_best_move
 
 # Use this logger variable to print messages to the console or log files.
 # logger.info("message") will always print "message" to the console or log file.
@@ -23,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 class ExampleEngine(MinimalEngine):
     """An example engine that all homemade engines inherit."""
-
     pass
 
 
@@ -31,7 +29,10 @@ class ExampleEngine(MinimalEngine):
 
 class FilipEngine(ExampleEngine):
     def search(self, board: chess.Board, *args: Any) -> PlayResult:
-        return PlayResult(get_best_move(board, board.turn == chess.WHITE, 4), None)
+        #return PlayResult(negamax_get_best_moved(board, board.turn == chess.WHITE, 4), None)
+        best_move = negamax_get_best_move(board, 4)
+        print("BEST MOVE: " + str(best_move))
+        return PlayResult(best_move, None)
 
 class RandomMove(ExampleEngine):
     """Get a random move."""
