@@ -1,6 +1,6 @@
 import unittest
 import chess
-from HomemadeEngine.ChessEngine import get_best_move, negamax_get_best_move
+from HomemadeEngine.ChessEngine import negamax_get_best_move
 from HomemadeEngine.Evaluation import evaluate_position
 import time
 
@@ -53,20 +53,34 @@ class TestEvaluationMethod(unittest.TestCase):
 
         
 
-    def test_negQuiescentSearch(self):
-        print("Running quiet search test")
-        fen = 'r2qkbnr/ppp3pp/2n1bp2/3pp3/3P4/2N2N2/PPP1PPPP/R1BQKB1R w Qkq - 0 6'
+    # def test_negQuiescentSearch(self):
+    #     print("Running quiet search test")
+    #     fen = 'r2qkbnr/ppp3pp/2n1bp2/3pp3/3P4/2N2N2/PPP1PPPP/R1BQKB1R w Qkq - 0 6'
+    #     board = chess.Board()
+    #     board.set_fen(fen)
+
+    #     print("\n\nNo quiet search results:")
+    #     start_time = time.perf_counter()
+    #     print(negamax_get_best_move(board, 3, False))
+    #     end_time = time.perf_counter()
+    #     elapsed_time = end_time - start_time
+    #     print(f"Time elapsed: {elapsed_time} seconds")
+
+    #     print("\n\nUsing quiet search results:")
+    #     start_time = time.perf_counter()
+    #     print(negamax_get_best_move(board, 3, True))
+    #     end_time = time.perf_counter()
+    #     elapsed_time = end_time - start_time
+    #     print(f"Time elapsed: {elapsed_time} seconds")
+
+
+    def test_stuck_position(self):
+        fen = 'r1b1kb1r/pp3pp1/2p5/2npp1qp/6n1/2N1PQN1/PPPP1PPP/R1B1KB1R w KQkq - 5 14'
         board = chess.Board()
         board.set_fen(fen)
 
-        print("\n\nNo quiet search results:")
-        start_time = time.perf_counter()
-        print(negamax_get_best_move(board, 3, False))
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        print(f"Time elapsed: {elapsed_time} seconds")
-
-        print("\n\nUsing quiet search results:")
+        # Expected nodes = 8203456
+        print("Stuck Pos Test")
         start_time = time.perf_counter()
         print(negamax_get_best_move(board, 3, True))
         end_time = time.perf_counter()

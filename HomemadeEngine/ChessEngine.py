@@ -3,95 +3,52 @@ from HomemadeEngine.Evaluation import evaluate_position, negamax_evaluate_positi
 from HomemadeEngine.EngineConstants import *
 
 nodes = 0
+nodeCount = 1
+nodePrinted = True
 
-# MINIMAX IMPLEMENTATION
-def get_best_move(board, is_white, depth = 3):
-    best_move_value = -100000 if is_white else 100000
-    alpha_beta = best_move_value
-    best_move = None
-    global nodes
-    nodes = 0
+print_depth_ls = [False for i in range(100)]
 
-    print("Minimax move evaluations")
+def order_moves(board):
+    legal_moves = board.legal_moves
+    captures = []
+    checks = []
+    other = []
 
-    if is_white:
-        for move in board.legal_moves:
-            board.push(move)
-            val = minimax(board, depth-1, alpha_beta, 100000, not is_white)
+    for move in legal_moves:
+        if board.is_capture(move):
+            captures.append(move)
+        elif board.gives_check(move):
+            checks.append(move)
+        else:
+            other.append(move)
 
-            print(str(move) + " - " + str(val))
-
-            board.pop()
-            if (is_white and val > best_move_value) or (not is_white and val < best_move_value):
-                best_move_value = val
-                alpha_beta = max(alpha_beta, best_move_value)
-                best_move = move
-    else:
-        for move in board.legal_moves:
-            board.push(move)
-            val = minimax(board, depth-1, -100000, alpha_beta, not is_white)
-
-            print(str(move) + " - " + str(val))
-
-            board.pop()
-            if (is_white and val > best_move_value) or (not is_white and val < best_move_value):
-                best_move_value = val
-                best_move = move
-                alpha_beta = min(alpha_beta, best_move_value)
-    print("Minimax Best move value: " + str(best_move_value))
-    print("Minimax Best Move: " + str(best_move))
-    return best_move
-
-# White = Maximizing
-# Black = Minimizing
-def minimax(board, depth, alpha, beta, is_maximizing):
-    if depth <= 0 or board.is_game_over():
-        return evaluate_position(board)
-
-    global nodes
-    nodes += 1
-
-    # White to play
-    if is_maximizing:
-        best_move = -100000
-        for move in board.legal_moves:
-            board.push(move)
-            value = minimax(board, depth-1, alpha, beta, not is_maximizing)
-            board.pop()
-            best_move = max(best_move, value)
-            alpha = max(alpha, value)
-            if alpha >= beta:
-                break
-        return best_move
-
-    # Black to play
-    else:
-        best_move = 100000
-        for move in board.legal_moves:
-            board.push(move)
-            value = minimax(board, depth-1, alpha, beta, not is_maximizing)
-            board.pop()
-            best_move = min(best_move, value)
-            beta = min(beta, value)
-            if beta <= alpha:
-                break
-        return best_move
-    
-
+    ordered_moves = checks + captures + other
+    return ordered_moves
 
 # NEGAMAX IMPLEMENTATION
 def negamax(board, depth, alpha, beta, use_quiet_search):    
     if depth <= 0 or board.is_game_over():
         if use_quiet_search:
-            return negamax_quiescence_search(board, alpha, beta)
+            return negamax_quiescence_search(board, alpha, beta, 1, 10)
         else:
             return negamax_evaluate_position(board)
     
     global nodes
     nodes += 1
     best_move = -1000
+    ordered_moves = order_moves(board)
 
-    for move in board.legal_moves:
+    global nodeCount
+    global nodePrinted
+    if (nodes > nodeCount * 100000):
+        nodePrinted = False
+    if not nodePrinted:
+        print("Current node num: " + str(nodes))
+        nodePrinted = True
+        nodeCount += 1
+
+
+    for move in ordered_moves:
         board.push(move)
         eval = -negamax(board, depth-1, -beta, -alpha, use_quiet_search)
         board.pop()
@@ -112,7 +69,9 @@ def negamax_get_best_move(board, depth=3, use_quiet_search=True):
         global nodes
         nodes = 0
 
-        for move in board.legal_moves:
+        ordered_moves = order_moves(board)
+
+        for move in ordered_moves:
             board.push(move)
             eval = -negamax(board, depth-1, alpha, beta, use_quiet_search)
             board.pop()
@@ -125,20 +84,38 @@ def negamax_get_best_move(board, depth=3, use_quiet_search=True):
         return best_move
 
 # Searches all captures
-def negamax_quiescence_search(board, alpha, beta):
+def negamax_quiescence_search(board, alpha, beta, depth, maxDepth):
+    if maxDepth <= 0 or board.is_game_over():
+        return negamax_evaluate_position(board)
+
     eval = negamax_evaluate_position(board)
     alpha = max(eval, alpha)
+
+    if(not print_depth_ls[depth]):
+        print("Hit Depth " + str(depth) + " in quiet search")
+        print_depth_ls[depth] = True
 
     global nodes
     nodes += 1
 
+    global nodeCount
+    global nodePrinted
+    if (nodes > nodeCount * 100000):
+        nodePrinted = False
+    if not nodePrinted:
+        print("Current node num: " + str(nodes))
+        nodePrinted = True
+        nodeCount += 1
+
     if eval >= beta:
         return beta
     
-    for move in board.legal_moves:
+    ordered_moves = order_moves(board)
+    
+    for move in ordered_moves:
         if board.is_capture(move) or board.gives_check(move):
             board.push(move)
-            eval = -negamax_quiescence_search(board, -beta, -alpha)
+            eval = -negamax_quiescence_search(board, -beta, -alpha, depth+1, maxDepth-1)
             board.pop()
 
             alpha = max(alpha, eval)
@@ -146,6 +123,3 @@ def negamax_quiescence_search(board, alpha, beta):
                 return beta
             
     return alpha
-            
-
-    
