@@ -30,7 +30,7 @@ class ExampleEngine(MinimalEngine):
 class FilipEngine(ExampleEngine):
     def search(self, board: chess.Board, *args: Any) -> PlayResult:
         #return PlayResult(negamax_get_best_moved(board, board.turn == chess.WHITE, 4), None)
-        best_move = negamax_get_best_move(board, 4)
+        best_move = negamax_get_best_move(board, 3)
         print("BEST MOVE: " + str(best_move))
         return PlayResult(best_move, None)
 
